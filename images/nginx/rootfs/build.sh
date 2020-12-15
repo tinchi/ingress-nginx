@@ -25,11 +25,11 @@ export MORE_HEADERS_VERSION=0.33
 export NGINX_DIGEST_AUTH=cd8641886c873cf543255aeda20d23e4cd603d05
 export NGINX_SUBSTITUTIONS=bc58cb11844bc42735bbaef7085ea86ace46d05b
 export NGINX_OPENTRACING_VERSION=0.10.0
-export OPENTRACING_CPP_VERSION=1.5.1
-export ZIPKIN_CPP_VERSION=0.5.2
-export JAEGER_VERSION=0.4.2
+export OPENTRACING_CPP_VERSION=1.6.0
+# export ZIPKIN_CPP_VERSION=0.5.2
+export JAEGER_VERSION=0.6.1
 export MSGPACK_VERSION=3.2.1
-export DATADOG_CPP_VERSION=1.2.0
+# export DATADOG_CPP_VERSION=1.2.0
 export MODSECURITY_VERSION=22e53aba4e3ae8c7d59a3672d6727e49246afe96
 export MODSECURITY_LIB_VERSION=v3.0.4
 export OWASP_MODSECURITY_CRS_VERSION=v3.3.0
@@ -139,17 +139,17 @@ get_src 618551948ab14cac51d6e4ad00452312c7b09938f59ebff4f93875013be31f2d \
 get_src d580efc71809cc1cd9138c1940f4f20766a0631cacf45b99c07facd93583260d \
         "https://github.com/opentracing-contrib/nginx-opentracing/archive/v$NGINX_OPENTRACING_VERSION.tar.gz"
 
-get_src 015c4187f7a6426a2b5196f0ccd982aa87f010cf61f507ae3ce5c90523f92301 \
+get_src 5b170042da4d1c4c231df6594da120875429d5231e9baa5179822ee8d1054ac3 \
         "https://github.com/opentracing/opentracing-cpp/archive/v$OPENTRACING_CPP_VERSION.tar.gz"
 
-get_src 30affaf0f3a84193f7127cc0135da91773ce45d902414082273dae78914f73df \
-        "https://github.com/rnburn/zipkin-cpp-opentracing/archive/v$ZIPKIN_CPP_VERSION.tar.gz"
+# get_src 30affaf0f3a84193f7127cc0135da91773ce45d902414082273dae78914f73df \
+#         "https://github.com/rnburn/zipkin-cpp-opentracing/archive/v$ZIPKIN_CPP_VERSION.tar.gz"
 
 get_src 38f2ae43fceda683f652065e13a80b14a580ede476a4b44eb0ddd85665380360 \
         "https://github.com/SpiderLabs/ModSecurity-nginx/archive/$MODSECURITY_VERSION.tar.gz"
 
-get_src 21257af93a64fee42c04ca6262d292b2e4e0b7b0660c511db357b32fd42ef5d3 \
-        "https://github.com/jaegertracing/jaeger-client-cpp/archive/v$JAEGER_VERSION.tar.gz"
+get_src 6a18378eb5f81a7946b111ee41614765028b39f3eb389df77a2fdfed9fdfefcc \
+        "https://github.com/tobiasstadler/jaeger-client-cpp/archive/w3c-traceparent.tar.gz"
 
 get_src 464f46744a6be778626d11452c4db3c2d09461080c6db42e358e21af19d542f6 \
         "https://github.com/msgpack/msgpack-c/archive/cpp-$MSGPACK_VERSION.tar.gz"
@@ -166,8 +166,8 @@ get_src 2a69815e4ae01aa8b170941a8e1a10b6f6a9aab699dee485d58f021dd933829a \
 get_src f74a0821b079ea1fd63dd8659064356fc3f421ff4b35c17877140d2b2841cc3b \
         "https://github.com/openresty/luajit2/archive/v$LUAJIT_VERSION.tar.gz"
 
-get_src 3e6fe45f467d653870985cc52a1c2cf81a8a2c7a7bcf7ffcfedfd305a47a1eca \
-        "https://github.com/DataDog/dd-opentracing-cpp/archive/v$DATADOG_CPP_VERSION.tar.gz"
+# get_src 3e6fe45f467d653870985cc52a1c2cf81a8a2c7a7bcf7ffcfedfd305a47a1eca \
+#         "https://github.com/DataDog/dd-opentracing-cpp/archive/v$DATADOG_CPP_VERSION.tar.gz"
 
 get_src 1af5a5632dc8b00ae103d51b7bf225de3a7f0df82f5c6a401996c080106e600e \
         "https://github.com/influxdata/nginx-influxdb-module/archive/$NGINX_INFLUXDB_VERSION.tar.gz"
@@ -252,7 +252,7 @@ make
 make install
 
 # build jaeger lib
-cd "$BUILD_PATH/jaeger-client-cpp-$JAEGER_VERSION"
+cd "$BUILD_PATH/jaeger-client-cpp-w3c-traceparent"
 sed -i 's/-Werror/-Wno-psabi/' CMakeLists.txt
 
 cat <<EOF > export.map
@@ -286,30 +286,30 @@ export HUNTER_INSTALL_DIR=$(cat _3rdParty/Hunter/install-root-dir) \
 mv libjaegertracing_plugin.so /usr/local/lib/libjaegertracing_plugin.so
 
 
-# build zipkin lib
-cd "$BUILD_PATH/zipkin-cpp-opentracing-$ZIPKIN_CPP_VERSION"
+# # build zipkin lib
+# cd "$BUILD_PATH/zipkin-cpp-opentracing-$ZIPKIN_CPP_VERSION"
 
-cat <<EOF > export.map
-{
-    global:
-        OpenTracingMakeTracerFactory;
-    local: *;
-};
-EOF
+# cat <<EOF > export.map
+# {
+#     global:
+#         OpenTracingMakeTracerFactory;
+#     local: *;
+# };
+# EOF
 
-mkdir .build
-cd .build
+# mkdir .build
+# cd .build
 
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_SHARED_LIBS=OFF \
-      -DWITH_BOOST_STATIC=ON \
-      -DBUILD_PLUGIN=ON \
-      -DBUILD_TESTING=OFF \
-      -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true \
-      ..
+# cmake -DCMAKE_BUILD_TYPE=Release \
+#       -DBUILD_SHARED_LIBS=OFF \
+#       -DWITH_BOOST_STATIC=ON \
+#       -DBUILD_PLUGIN=ON \
+#       -DBUILD_TESTING=OFF \
+#       -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true \
+#       ..
 
-make
-make install
+# make
+# make install
 
 # build msgpack lib
 cd "$BUILD_PATH/msgpack-c-cpp-$MSGPACK_VERSION"
@@ -325,19 +325,19 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 make
 make install
 
-# build datadog lib
-cd "$BUILD_PATH/dd-opentracing-cpp-$DATADOG_CPP_VERSION"
+# # build datadog lib
+# cd "$BUILD_PATH/dd-opentracing-cpp-$DATADOG_CPP_VERSION"
 
-mkdir .build
-cd .build
+# mkdir .build
+# cd .build
 
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_TESTING=OFF \
-      -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true \
-      ..
+# cmake -DCMAKE_BUILD_TYPE=Release \
+#       -DBUILD_TESTING=OFF \
+#       -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true \
+#       ..
 
-make
-make install
+# make
+# make install
 
 # Get Brotli source and deps
 cd "$BUILD_PATH"
